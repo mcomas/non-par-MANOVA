@@ -1,0 +1,74 @@
+---
+title: "Non parametric Manova"
+output: html_document
+---
+
+```{r, include=FALSE}
+options(width=200)
+```
+
+### `vegan` package
+
+```{r}
+library(vegan)
+?adonis
+```
+
+```{r}
+data(dune)
+data(dune.env)
+adonis(dune ~ Management*A1, data=dune.env, permutations=99)
+```
+
+
+Index de disimillllitud (default "bray"): "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", "chao", "cao" or "mahalanobis". Veure `?begdist` per la definició.
+
+#### Referencies
+
+Anderson, M.J. 2001. A new method for non-parametric multivariate analysis of variance. Austral Ecology, 26: 32–46.
+
+------
+
+### `ade4` package
+
+```{r}
+library(ade4)
+?amova
+```
+
+```{r}
+data(humDNAm)
+amovahum <- amova(humDNAm$samples, sqrt(humDNAm$distances), humDNAm$structures)
+amovahum
+```
+
+
+Quina forma tenen les dades?
+
+* Mostra 
+
+a data frame with haplotypes (or genotypes) as rows, populations as columns and abundance as entries
+
+```{r}
+str(humDNAm$samples)
+```
+
+* Distàncies
+
+an object of class dist computed from Euclidean distance. If distances is null, equidistances are used.
+
+```{r}
+str(humDNAm$distances)
+```
+
+* Structures
+
+a data frame containing, in the jth row and the kth column, the name of the group of level k to which the jth population belongs
+
+```{r}
+str(humDNAm$structures)
+```
+
+#### Referencies
+
+Excoffier, L., Smouse, P.E. and Quattro, J.M. (1992) Analysis of molecular variance inferred from metric distances among DNA haplotypes: application to human mitochondrial DNA restriction data. Genetics, 131, 479–491.
