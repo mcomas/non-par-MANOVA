@@ -7,68 +7,119 @@ output: html_document
 options(width=200)
 ```
 
-### `vegan` package
+## `vegan` package
 
-```{r}
+Extret del paquet:
+
+> Analysis of variance using distance matrices — for partitioning distance matrices among sources of variation and fitting linear models (e.g., factors, polynomial regression) to distance matrices; uses a permutation test with pseudo-F ratios.
+
+La metolodogia està explicada a  [(Anderson, M.J. 2001)](http://onlinelibrary.wiley.com/doi/10.1111/j.1442-9993.2001.01070.pp.x/abstract?deniedAccessCustomisedMessage=&userIsAuthenticated=false). Defineix un estadístic de contrast F a partir de distàncies entre individus (equació (3)). Després, per calcular un p-valor, realitza un test de permutacions per decidir si els grups són igual o no.
+
+
+
+```{r, comment=">"}
 library(vegan)
 ?adonis
 ```
 
-```{r}
+El paquet treballa amb dos data.frames. El primer és on es defineix la variable multivariant explicada. En l'exemple utilitzen comptatges de plantes trobades en 20 zones diferents (fa tota la pinta a ser composicional, això si, amb molts zeros :-( )).
+
+```{r, comment=">"}
 data(dune)
-data(dune.env)
-adonis(dune ~ Management*A1, data=dune.env, permutations=99)
+str(dune)
 ```
 
+El segon data.frame, és el que conté les covariables. Hi han diferents caracteristiques del terreny on es fan els comptatges.
 
-Index de disimillllitud (default "bray"): "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", "chao", "cao" or "mahalanobis". Veure `?begdist` per la definició.
+```{r, comment=">"}
+data(dune.env)
+str(dune.env)
+```
 
-#### Referencies
+Imagino que per un contrast MANOVA, només caldrà considerar variables catagoriques.
 
-Anderson, M.J. 2001. A new method for non-parametric multivariate analysis of variance. Austral Ecology, 26: 32–46.
+**Hi han diferències entre els grups  BF (Biological farming), HF (Hobby farming), NM (Nature Conservation Management), and SF (Standard Farming)?**
+
+```{r, comment=">"}
+adonis(dune ~ Management, data=dune.env, permutations=99)
+```
+
+**Hi han diferències entre 4 nivels d'humitat (`Moisture`)**
+
+```{r, comment=">"}
+adonis(dune ~ Moisture, data=dune.env, permutations=99)
+```
+
+**Un cas en el que no hi haurien d'haver diferències**
+
+Per veure un cas en que no hi hagi diferències entre grups, podem provar de separar la mostra en tres grups de forma de forma aleatoria.
+
+
+```{r, comment=">"}
+set.seed(1)
+dune.env$group = sample(1:3, nrow(dune.env), replace=T)
+```
+
+```{r, comment=">"}
+adonis(dune ~ group, data=dune.env, permutations=99)
+```
+
+ * El paquet té definides diferents distàncies entre observacions (per defecte "bray"): "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", "chao", "cao" or "mahalanobis". Veure `?vegdist` per la definició.
+ * Imagino que en el cas CoDa, la més interessant serà la euclideana. En el darrer cas només caldria definir la distància euclidea.
+ 
+```{r, comment=">"}
+adonis(dune~group, data=dune.env, permutations=99, method = "euclidean")
+```
+
+ * Ja que el test es basa en distàncies, crec que el mètode no necessita de tranformació ILR. Què creus?
+
+ * Per fer un analis MANOVA two-way, només cal afegir més covariables a la formula. Per exemple, utilitzant la variables creada alateoriament i la humitat, tenim:
+ 
+ 
+```{r, comment=">"}
+adonis(dune~Moisture+group, data=dune.env, permutations=99, method = "euclidean")
+```
 
 ------
 
-### `ade4` package
+## `ade4` package
 
-```{r}
+Hi ha un altre paquet que es diu `ade4`. No m'he mirat la metodologia de l'article [Excoffier, L., Smouse, P.E. and Quattro, J.M. (1992)](http://www.genetics.org/content/131/2/479.abstract)
+
+```{r, comment=">"}
 library(ade4)
 ?amova
 ```
 
-```{r}
+```{r, comment=">"}
 data(humDNAm)
 amovahum <- amova(humDNAm$samples, sqrt(humDNAm$distances), humDNAm$structures)
 amovahum
 ```
 
 
-Quina forma tenen les dades?
+**Quina forma tenen les dades de la funció?**
 
-* Mostra 
+* _Mostra_
 
 a data frame with haplotypes (or genotypes) as rows, populations as columns and abundance as entries
 
-```{r}
+```{r, comment=">"}
 str(humDNAm$samples)
 ```
 
-* Distàncies
+* _Distàncies_
 
 an object of class dist computed from Euclidean distance. If distances is null, equidistances are used.
 
-```{r}
+```{r, comment=">"}
 str(humDNAm$distances)
 ```
 
-* Structures
+* _Structures_
 
 a data frame containing, in the jth row and the kth column, the name of the group of level k to which the jth population belongs
 
-```{r}
+```{r, comment=">"}
 str(humDNAm$structures)
 ```
-
-#### Referencies
-
-Excoffier, L., Smouse, P.E. and Quattro, J.M. (1992) Analysis of molecular variance inferred from metric distances among DNA haplotypes: application to human mitochondrial DNA restriction data. Genetics, 131, 479–491.
